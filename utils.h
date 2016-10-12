@@ -70,10 +70,20 @@ struct Color {
 #define EXPAND_COLOR(c) (c).r, (c).g, (c).b
 
 struct Point2D {
-		const int x;
-		const int y;
+		int x;
+		int y;
+
+		Point2D() : Point2D(0, 0) {}
+
+		Point2D(const Point2D& other) : Point2D(other.x, other.y) {}
 
 		Point2D(int x, int y) : x(x), y(y) {}
+
+		Point2D& operator=(const Point2D& other) {
+			x = other.x;
+			y = other.y;
+			return *this;
+		}
 };
 
 #define EXPAND_POINT2D(p) (p).x, (p).y
@@ -86,16 +96,25 @@ struct Line {
 };
 
 struct Rectangle {
-		const Point2D topLeft;
-		const int width;
-		const int height;
+		Point2D topLeft;
+		int     width;
+		int     height;
 
+		Rectangle();
 		Rectangle(const Point2D& topLeft, const int width, const int height);
+		Rectangle(const Rectangle& other);
+
+		Rectangle& operator=(const Rectangle& other);
 };
 
 struct Square : public Rectangle {
 		Square(const Point2D& topLeft, const int sideLength);
 };
+
+Rectangle get_centered_rect(int containerWidth, int containerHeight,
+														int rectWidth, int rectHeight);
+
+bool is_rect_contained(const Rectangle& container, const Rectangle& containee);
 
 }
 

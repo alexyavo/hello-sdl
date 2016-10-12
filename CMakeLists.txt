@@ -9,7 +9,7 @@ set(SOURCE_FILES
 	Renderer.cpp Renderer.h
 	Window.cpp Window.h
 	Texture.cpp Texture.h
-	utils.cpp TtfFont.cpp TtfFont.h Surface.cpp Surface.h)
+	utils.cpp TtfFont.cpp TtfFont.h Surface.cpp Surface.h Grid.cpp Grid.h Cell.cpp Cell.h RotationType.h Shapes.cpp Shapes.h Random.h)
 
 add_executable(hello_world ${SOURCE_FILES})
 

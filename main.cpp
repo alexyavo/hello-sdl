@@ -8,12 +8,16 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <sstream>
+#include <vector>
+#include <random>
 
 #include "utils.h"
 #include "Window.h"
 #include "Renderer.h"
 #include "Texture.h"
 #include "TtfFont.h"
+#include "Grid.h"
+#include "Shapes.h"
 
 //Screen dimension constants
 const int SCREEN_WIDTH  = 640;
@@ -55,14 +59,6 @@ public:
 
 }
 
-Rectangle get_centered_rect(int containerWidth, int containerHeight,
-														int rectWidth, int rectHeight) {
-	return {{ ( containerWidth / 2 ) - ( rectWidth / 2 ),
-						( containerHeight / 2 ) - ( rectHeight / 2 ) },
-					rectWidth,
-					rectHeight };
-}
-
 int main(int argc, char* args[]) {
 	SDL::Initializer init;
 
@@ -72,93 +68,147 @@ int main(int argc, char* args[]) {
 		SDL::TtfFont              defaultFont("/home/sol/.tmp/assets/default.ttf", 16);
 
 		const Uint32 ticksPerFrame = 1000 / 60;
-		uint32_t nframes = 0;
+
+		// for FPS calculation
+		uint32_t nframes         = 0;
+		Uint32   lastFpsPollTime = 0;
+		Uint32   sampleFpsDelta  = 100;
+
+		std::unique_ptr<SDL::Texture> fpsTexture = nullptr;
+		// --------------------------------
+
+		Tetris::Grid                   grid(SCREEN_WIDTH, SCREEN_HEIGHT);
+		std::unique_ptr<Tetris::Shape> shape(grid.spawn_shape());
+
+		// don't allow too many presses per second, as it makes the kb seem too sensitive
+//		Uint32 minMsBetweenKeyPresses = 120;
+//		Uint32 lastKeyPressTime       = 0;
+
+		Uint32 moveShapeEvery         = 500;
+		Uint32 moveFallingShapeEvery  = 50;
+		Uint32 lastShapeShiftDownTime = 0;
+		Uint32 score                  = 0;
+
+		std::unique_ptr<SDL::Texture> scoreTextTexture         =
+																					defaultFont.render_solid("SCORE:", Color::BLACK)
+																										 ->createTexture(*renderer);
+		// The "SCORE:" will be to the right of the grid outline box
+		int                           scoreTextTextureOffset_x = 30;
+		int                           scoreTextTextureOffset_y = 10;
+
+		Point2D scoreTextTexturePos(grid.outline().topLeft.x +
+																grid.outline().width + scoreTextTextureOffset_x,
+																grid.outline().topLeft.y + scoreTextTextureOffset_y);
+
+		std::unique_ptr<SDL::Texture> scoreCountTexture       =
+																					defaultFont.render_solid("0", Color::BLACK)
+																										 ->createTexture(*renderer);
+		// How much below the "SCORE:" text will be the integer score displayed
+		int                           scoreCountTextureOffset = 20;
+
+		Point2D scoreCountTexturePos(scoreTextTexturePos.x,
+																 scoreTextTexturePos.y + scoreCountTextureOffset);
+
 		while (true) {
-			Uint32 startTime = SDL_GetTicks();
+			Uint32 frameStartTime = SDL_GetTicks();
 
 			SDL_Event e;
 			while (SDL_PollEvent(&e) != 0) {
 				switch (e.type) {
+					case SDL_KEYDOWN: {
+						if (e.key.repeat == false) {
+							switch (e.key.keysym.scancode) {
+								case SDL_SCANCODE_DOWN:
+									shape->rotate_clockwise();
+									break;
+								case SDL_SCANCODE_UP:
+									shape->rotate_counterclockwise();
+									break;
+								case SDL_SCANCODE_RIGHT:
+									shape->shift_right();
+									break;
+								case SDL_SCANCODE_LEFT:
+									shape->shift_left();
+									break;
+								case SDL_SCANCODE_SPACE:
+									shape->mark_falling();
+									break;
+							}
+						}
+					}
+						break;
+
 					case SDL_QUIT:
 						return 0;
+				}
+			}
+
+			if (( frameStartTime - lastShapeShiftDownTime >= moveShapeEvery ) ||
+					( frameStartTime - lastShapeShiftDownTime >= moveFallingShapeEvery &&
+						shape->is_falling())) {
+				lastShapeShiftDownTime = frameStartTime;
+
+				// Cannot move down, means we hit a dead cell or the bottom of the grid
+				if (shape->shift_down() == false) {
+					int rowsKilled = shape->suicide();
+					if (rowsKilled > 0) {
+						score += (1 << rowsKilled);
+					}
+
+					// TODO generalize somehow to convert int to texture/string
+					std::stringstream scoreText;
+					scoreText << score;
+					scoreCountTexture =
+									defaultFont.render_solid(scoreText.str(), Color::BLACK)->createTexture(*renderer);
+
+					shape = grid.spawn_shape();
 				}
 			}
 
 			renderer->set_drawcolor(Color::WHITE);
 			renderer->clear();
 
-			const int cellSize        = 20;
-			const int gridWidthCells  = 10;
-			const int gridHeightCells = 20;
-
-			Rectangle grid = get_centered_rect(SCREEN_WIDTH, SCREEN_HEIGHT,
-																				 gridWidthCells * cellSize, gridHeightCells * cellSize);
 			renderer->set_drawcolor(Color::BLACK);
-			renderer->draw(grid);
+			grid.render(*renderer);
+			shape->render(*renderer);
 
-			Uint32 endTime = SDL_GetTicks();
-			int32_t sleepDelta = ticksPerFrame - (endTime - startTime);
+
+			renderer->render_copy(*scoreTextTexture, scoreTextTexturePos);
+			renderer->render_copy(*scoreCountTexture, scoreCountTexturePos);
+
+			// -----------------------------------------
+			Uint32 frameEndTime = SDL_GetTicks();
+
+			uint32_t timeSinceFpsPoll = frameEndTime - lastFpsPollTime;
+			if (timeSinceFpsPoll >= sampleFpsDelta) {
+				float fps = (( nframes * 1.f ) / ( timeSinceFpsPoll / 1000.f ));
+
+				std::stringstream fpsText;
+				fpsText.precision(3);
+				fpsText << fps << " FPS";
+
+				fpsTexture = defaultFont
+								.render_solid(fpsText.str(), Color::BLACK)
+								->createTexture(*renderer);
+
+				lastFpsPollTime = frameEndTime;
+				nframes         = 0;
+			}
+
+			if (fpsTexture) {
+				renderer->render_copy(*fpsTexture, { 0, 0 });
+			}
+
+			// ----------------------------------------------
+
+			int32_t sleepDelta = ticksPerFrame - ( frameEndTime - frameStartTime );
 			if (sleepDelta > 0) {
 				SDL_Delay(sleepDelta);
 			}
 
-			double avgFps = nframes / (SDL_GetTicks() / 1000.f);
-			std::stringstream avgFpsText;
-			avgFpsText << avgFps << " avg FPS";
-			renderer->render_copy(
-							*defaultFont.render_solid(avgFpsText.str(), Color::BLACK)->createTexture(*renderer),
-							{ 0, 0 });
-
-
 			renderer->present();
 			++nframes;
 		}
-
-
-		//SDL_Delay(2000);
-
-
-//		SDL::FilledRectangle({ 0xFF, 0x00, 0x00 }, 0xFF,
-//												 { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4 },
-//												 SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
-//						.renderWith(*renderer);
-//
-//		SDL::OutlinedRectangle({ 0x00, 0xFF, 0x00 }, 0xFF,
-//													 { SCREEN_WIDTH / 6, SCREEN_HEIGHT / 6 },
-//													 SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 2 / 3)
-//						.renderWith(*renderer);
-//
-//		SDL::Line({0x00, 0x00, 0xFF}, 0xFF,
-//							{ 0, SCREEN_HEIGHT / 2 }, { SCREEN_WIDTH, SCREEN_HEIGHT / 2 })
-//						.renderWith(*renderer);
-//
-//
-//		renderer->present();
-//		SDL_Delay(5000);
-//
-//		// ----------------------------------------------------------------------------
-//
-
-//
-//
-//		utils::Color colorKey(0x00, 0xFF, 0xFF);
-//		SDL::Texture playerTexture(renderer->loadTextureFromFile("/home/sol/.tmp/assets/player2.png",
-//																														 &colorKey));
-//		SDL::Texture bgTexture(renderer->loadTextureFromFile("/home/sol/.tmp/assets/background.png",
-//																												 &colorKey));
-//
-//
-//		{
-//			renderer->set_viewport({ SCREEN_WIDTH / 3 * 2, 0 }, SCREEN_WIDTH / 3, SCREEN_HEIGHT);
-//			bgTexture.renderAt({ 0, 0 });
-//		}
-//
-//		{
-//			renderer->set_viewport({ 0, 0 }, SCREEN_WIDTH / 3 * 2, SCREEN_HEIGHT);
-//			playerTexture.renderAt({ 240, 190 });
-//		}
-//
-
 	}
 	catch (const std::exception& ex) {
 		std::cout << ex.what() << std::endl;

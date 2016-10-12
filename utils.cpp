@@ -17,9 +17,38 @@ Line::Line(const Point2D& point1, const Point2D point2) : point1(point1), point2
 Rectangle::Rectangle(const Point2D& topLeft, const int width, const int height)
 				: topLeft(topLeft), width(width), height(height) {}
 
+Rectangle::Rectangle(const Rectangle& other) : Rectangle(other.topLeft, other.width, other.height) {
+
+}
+
+Rectangle& Rectangle::operator=(const Rectangle& other) {
+	topLeft = other.topLeft;
+	width   = other.width;
+	height  = other.height;
+	return *this;
+}
+
+Rectangle::Rectangle() : Rectangle(Point2D(), 0, 0) {
+}
+
 Square::Square(const Point2D& topLeft, const int sideLength) : Rectangle(topLeft, sideLength,
 																																				 sideLength) {
 
+}
+
+Rectangle
+get_centered_rect(int containerWidth, int containerHeight, int rectWidth, int rectHeight) {
+	return {{ ( containerWidth / 2 ) - ( rectWidth / 2 ),
+						( containerHeight / 2 ) - ( rectHeight / 2 ) },
+					rectWidth,
+					rectHeight };
+}
+
+bool is_rect_contained(const Rectangle& container, const Rectangle& containee) {
+	return container.topLeft.x <= containee.topLeft.x &&
+				 container.topLeft.y <= containee.topLeft.y &&
+				 ( containee.topLeft.x + containee.width ) <= ( container.topLeft.x + container.width ) &&
+				 ( containee.topLeft.y + containee.height ) <= ( container.topLeft.y + container.height );
 }
 
 }
