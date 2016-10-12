@@ -5,7 +5,7 @@
 #ifndef HELLO_WORLD_CELL_H
 #define HELLO_WORLD_CELL_H
 
-#include "utils.h"
+#include "../utils.h"
 
 namespace Tetris {
 

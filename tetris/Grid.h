@@ -7,11 +7,11 @@
 
 #include <cstdint>
 #include <vector>
-#include "utils.h"
-#include "Renderer.h"
+#include "../utils.h"
+#include "../Renderer.h"
 #include "Cell.h"
 #include "Shapes.h"
-#include "Random.h"
+#include "../Random.h"
 
 namespace Tetris {
 

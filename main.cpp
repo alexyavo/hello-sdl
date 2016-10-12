@@ -16,8 +16,8 @@
 #include "Renderer.h"
 #include "Texture.h"
 #include "TtfFont.h"
-#include "Grid.h"
-#include "Shapes.h"
+#include "tetris/Grid.h"
+#include "tetris/Shapes.h"
 
 //Screen dimension constants
 const int SCREEN_WIDTH  = 640;
@@ -60,6 +60,22 @@ public:
 }
 
 int main(int argc, char* args[]) {
+	SDL::Initializer init;
+
+	try {
+		SDL::Window               window("sdl test", SCREEN_WIDTH, SCREEN_HEIGHT);
+		shared_ptr<SDL::Renderer> renderer(window.create_renderer());
+		SDL::TtfFont              defaultFont("/home/sol/.tmp/assets/default.ttf", 16);
+	}
+	catch (const std::exception& ex) {
+		std::cout << ex.what() << std::endl;
+	}
+
+
+	return 0;
+}
+
+int tetris_main(int argc, char* args[]) {
 	SDL::Initializer init;
 
 	try {

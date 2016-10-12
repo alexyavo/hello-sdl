@@ -7,7 +7,7 @@
 
 #include "Cell.h"
 #include "RotationType.h"
-#include "Renderer.h"
+#include "../Renderer.h"
 
 namespace Tetris {
 
@@ -30,7 +30,7 @@ protected:
 		Grid& grid_;
 		std::array<Cell, 4> cells_;
 		RotationType        rotation_;
-		bool falling_;
+		bool                falling_;
 
 public:
 		// TODO this factory method moved to Grid class

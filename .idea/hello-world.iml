@@ -3,28 +3,29 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/Texture.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/RotationType.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Texture.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Surface.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/Cell.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Random.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/Shapes.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/Shapes.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/TtfFont.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Window.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/utils.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/Cell.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Window.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/TtfFont.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Renderer.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Surface.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/Grid.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/main.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Renderer.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/Grid.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/Random.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tetris/Cell.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tetris/Game.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tetris/Shapes.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tetris/Game.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tetris/Grid.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tetris/Grid.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tetris/Cell.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tetris/RotationType.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tetris/Shapes.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/utils.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/TtfFont.h" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">

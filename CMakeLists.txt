@@ -9,7 +9,14 @@ set(SOURCE_FILES
 	Renderer.cpp Renderer.h
 	Window.cpp Window.h
 	Texture.cpp Texture.h
-	utils.cpp TtfFont.cpp TtfFont.h Surface.cpp Surface.h Grid.cpp Grid.h Cell.cpp Cell.h RotationType.h Shapes.cpp Shapes.h Random.h)
+	utils.cpp
+	TtfFont.cpp TtfFont.h
+	Surface.cpp Surface.h
+	tetris/Grid.cpp tetris/Grid.h
+	tetris/Cell.cpp tetris/Cell.h
+	tetris/RotationType.h
+	tetris/Shapes.cpp tetris/Shapes.h
+	Random.h tetris/Game.cpp tetris/Game.h)
 
 add_executable(hello_world ${SOURCE_FILES})
 
