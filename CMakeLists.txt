@@ -13,7 +13,7 @@ set(SOURCE_FILES
 	TtfFont.cpp TtfFont.h
 	Surface.cpp Surface.h
 	tetris/Grid.cpp tetris/Grid.h
-	tetris/Cell.cpp tetris/Cell.h
+	tetris/Block.cpp tetris/Block.h
 	tetris/RotationType.h
 	tetris/Shapes.cpp tetris/Shapes.h
 	Random.h tetris/Game.cpp tetris/Game.h)

@@ -9,17 +9,19 @@
 
 namespace Tetris {
 
-class Cell : public utils::Rectangle {
+class Block : public utils::Rectangle {
 public:
 		static constexpr int size = 20;
 
 public:
-		Cell(const Cell& other);
-		Cell(const utils::Point2D& topLeft = { 0, 0 });
-		Cell left();
-		Cell right();
-		Cell up();
-		Cell down();
+		Block(int x, int y);
+		Block(const Block& other);
+		Block(const utils::Point2D& pos = { 0, 0 });
+
+		Block left();
+		Block right();
+		Block up();
+		Block down();
 };
 
 }

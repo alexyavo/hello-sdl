@@ -5,7 +5,7 @@
 #ifndef HELLO_WORLD_SHAPES_H
 #define HELLO_WORLD_SHAPES_H
 
-#include "Cell.h"
+#include "Block.h"
 #include "RotationType.h"
 #include "../Renderer.h"
 
@@ -13,24 +13,24 @@ namespace Tetris {
 
 using utils::Point2D;
 
-enum ShapeType : uint16_t {
-		L,
-		O,
-		I,
-		J,
-		S,
-		T,
-		Z
-};
+//enum ShapeType : uint16_t {
+//		L,
+//		O,
+//		I,
+//		J,
+//		S,
+//		T,
+//		Z
+//};
 
 class Grid;
 
 class Shape {
 protected:
 		Grid& grid_;
-		std::array<Cell, 4> cells_;
-		RotationType        rotation_;
-		bool                falling_;
+		std::array<Block, 4> blocks_;
+		RotationType         rotation_;
+		bool                 falling_;
 
 public:
 		// TODO this factory method moved to Grid class
@@ -75,7 +75,7 @@ protected:
 
 private:
 		bool is_colliding(); // returns true if shape is currently in collision with the grid
-		bool is_cell_colliding(const Cell& cell);
+		bool is_block_colliding(const Block& cell);
 };
 
 // TODO make all shape ctors protected/private. Right now I can't seem to get the friend

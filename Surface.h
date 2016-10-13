@@ -17,7 +17,7 @@ private:
 		SDL_Surface* surface_;
 
 public:
-		static std::unique_ptr<Surface> createFromImage(const std::string& path);
+		static std::unique_ptr<Surface> create_from_img(const std::string& path);
 
 		Surface(SDL_Surface* surface_);
 		~Surface();
@@ -29,7 +29,7 @@ public:
 
 		int height() const {return surface_->h;}
 
-		std::unique_ptr<Texture> createTexture(Renderer& renderer);
+		std::unique_ptr<Texture> create_texture(Renderer& renderer);
 };
 
 }

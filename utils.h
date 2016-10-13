@@ -55,6 +55,31 @@ protected:
 		NonCopyable& operator=(const NonCopyable& other) = delete;
 };
 
+template<typename FuncT>
+class ScopeGuard : public NonCopyable {
+private:
+		bool  doCleanup_;
+		FuncT cleanup_;
+
+public:
+		ScopeGuard(const FuncT& cleanup) : doCleanup_(true), cleanup_(cleanup) {}
+
+		ScopeGuard(ScopeGuard&& other) : doCleanup_(other.doCleanup_),
+																		 cleanup_(std::move(other.cleanup_)) {}
+
+		~ScopeGuard() {
+			if (doCleanup_) {
+				cleanup_();
+			}
+		}
+};
+
+template<typename FuncT>
+ScopeGuard<typename std::decay<FuncT>::type>
+make_guard(FuncT&& cleanup) {
+	return ScopeGuard<typename std::decay<FuncT>::type>(std::forward<FuncT>(cleanup));
+}
+
 struct Color {
 		const uint8_t r;
 		const uint8_t g;
@@ -63,8 +88,10 @@ struct Color {
 
 		Color(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t alpha = 0xFF);
 
+		// TODO perhaps can use constexpr?
 		static Color BLACK;
 		static Color WHITE;
+		static Color MAROON;
 };
 
 #define EXPAND_COLOR(c) (c).r, (c).g, (c).b
@@ -96,19 +123,19 @@ struct Line {
 };
 
 struct Rectangle {
-		Point2D topLeft;
+		Point2D pos;
 		int     width;
 		int     height;
 
 		Rectangle();
-		Rectangle(const Point2D& topLeft, const int width, const int height);
+		Rectangle(const Point2D& pos, int width, int height);
 		Rectangle(const Rectangle& other);
 
 		Rectangle& operator=(const Rectangle& other);
 };
 
 struct Square : public Rectangle {
-		Square(const Point2D& topLeft, const int sideLength);
+		Square(const Point2D& pos, int sideLength);
 };
 
 Rectangle get_centered_rect(int containerWidth, int containerHeight,

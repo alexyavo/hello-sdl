@@ -9,13 +9,13 @@ namespace Tetris {
 
 Shape::Shape(Grid& grid) : grid_(grid), falling_(false) {
 	// TODO y is large to avoid collisions on creation
-	cells_[0] = Cell(Point2D(grid.outline().topLeft.x + (( Grid::Width / 2 ) * Cell::size ),
-													 grid.outline().topLeft.y + 3 * Cell::size));
+	blocks_[0] = { grid.outline().pos.x + (( Grid::Width / 2 ) * Block::size ),
+								 grid.outline().pos.y + 3 * Block::size };
 }
 
 void Shape::render(SDL::Renderer& renderer) {
-	for (Cell& cell : cells_) {
-		renderer.draw(cell);
+	for (Block& block : blocks_) {
+		renderer.draw(block);
 	}
 }
 
@@ -50,15 +50,14 @@ bool Shape::shift_right() {
 		return false;
 	}
 
-	for (Cell& cell : cells_) {
-		if (is_cell_colliding(Cell(Point2D(cell.topLeft.x + Cell::size,
-																			 cell.topLeft.y)))) {
+	for (Block& block : blocks_) {
+		if (is_block_colliding({ block.pos.x + Block::size, block.pos.y })) {
 			return false;
 		}
 	}
 
-	for (Cell& cell : cells_) {
-		cell.topLeft.x += Cell::size;
+	for (Block& block : blocks_) {
+		block.pos.x += Block::size;
 	}
 
 	return true;
@@ -69,30 +68,28 @@ bool Shape::shift_left() {
 		return false;
 	}
 
-	for (Cell& cell : cells_) {
-		if (is_cell_colliding(Cell(Point2D(cell.topLeft.x - Cell::size,
-																			 cell.topLeft.y)))) {
+	for (Block& block : blocks_) {
+		if (is_block_colliding({ block.pos.x - Block::size, block.pos.y })) {
 			return false;
 		}
 	}
 
-	for (Cell& cell : cells_) {
-		cell.topLeft.x -= Cell::size;
+	for (Block& block : blocks_) {
+		block.pos.x -= Block::size;
 	}
 
 	return true;
 }
 
 bool Shape::shift_down() {
-	for (Cell& cell : cells_) {
-		if (is_cell_colliding(Cell(Point2D(cell.topLeft.x,
-																			 cell.topLeft.y + Cell::size)))) {
+	for (Block& block : blocks_) {
+		if (is_block_colliding({ block.pos.x, block.pos.y + Block::size })) {
 			return false;
 		}
 	}
 
-	for (Cell& cell : cells_) {
-		cell.topLeft.y += Cell::size;
+	for (Block& block : blocks_) {
+		block.pos.y += Block::size;
 	}
 
 	return true;
@@ -114,8 +111,8 @@ bool Shape::set_rotation(RotationType rotation) {
 }
 
 bool Shape::is_colliding() {
-	for (Cell& cell : cells_) {
-		if (is_cell_colliding(cell)) {
+	for (Block& block : blocks_) {
+		if (is_block_colliding(block)) {
 			return true;
 		}
 	}
@@ -123,11 +120,11 @@ bool Shape::is_colliding() {
 	return false;
 }
 
-bool Shape::is_cell_colliding(const Cell& cell) {
-	if (is_rect_contained(grid_.outline(), cell) == false) {
+bool Shape::is_block_colliding(const Block& block) {
+	if (is_rect_contained(grid_.outline(), block) == false) {
 		return true;
 	}
-	if (grid_.is_cell_dead(cell)) {
+	if (grid_.is_block_dead(block)) {
 		return true;
 	}
 
@@ -135,8 +132,8 @@ bool Shape::is_cell_colliding(const Cell& cell) {
 }
 
 int Shape::suicide() {
-	for (Cell& cell : cells_) {
-		grid_.kill_cell(cell);
+	for (Block& block : blocks_) {
+		grid_.kill_block(block);
 	}
 
 	return grid_.clear_dead_rows();
@@ -156,27 +153,27 @@ Shape_L::Shape_L(Grid& grid) : Shape(grid) {
 void Shape_L::do_rotation(RotationType rotation) {
 	switch (rotation) {
 		case RotationType::NONE:
-			cells_[1] = cells_[0].right();
-			cells_[2] = cells_[0].up();
-			cells_[3] = cells_[2].up();
+			blocks_[1] = blocks_[0].right();
+			blocks_[2] = blocks_[0].up();
+			blocks_[3] = blocks_[2].up();
 			break;
 
 		case RotationType::R90:
-			cells_[1] = cells_[0].up();
-			cells_[2] = cells_[0].left();
-			cells_[3] = cells_[2].left();
+			blocks_[1] = blocks_[0].up();
+			blocks_[2] = blocks_[0].left();
+			blocks_[3] = blocks_[2].left();
 			break;
 
 		case RotationType::R180:
-			cells_[1] = cells_[0].left();
-			cells_[2] = cells_[0].down();
-			cells_[3] = cells_[2].down();
+			blocks_[1] = blocks_[0].left();
+			blocks_[2] = blocks_[0].down();
+			blocks_[3] = blocks_[2].down();
 			break;
 
 		case RotationType::R270:
-			cells_[1] = cells_[0].down();
-			cells_[2] = cells_[0].right();
-			cells_[3] = cells_[2].right();
+			blocks_[1] = blocks_[0].down();
+			blocks_[2] = blocks_[0].right();
+			blocks_[3] = blocks_[2].right();
 			break;
 	}
 }
@@ -185,9 +182,9 @@ Shape_O::Shape_O(Grid& grid) : Shape(grid) {
 }
 
 void Shape_O::do_rotation(RotationType rotation) {
-	cells_[1] = cells_[0].right();
-	cells_[2] = cells_[0].down();
-	cells_[3] = cells_[2].right();
+	blocks_[1] = blocks_[0].right();
+	blocks_[2] = blocks_[0].down();
+	blocks_[3] = blocks_[2].right();
 }
 
 Shape_I::Shape_I(Grid& grid) : Shape(grid) {
@@ -196,27 +193,27 @@ Shape_I::Shape_I(Grid& grid) : Shape(grid) {
 void Shape_I::do_rotation(RotationType rotation) {
 	switch (rotation) {
 		case RotationType::NONE:
-			cells_[1] = cells_[0].up();
-			cells_[2] = cells_[0].down();
-			cells_[3] = cells_[2].down();
+			blocks_[1] = blocks_[0].up();
+			blocks_[2] = blocks_[0].down();
+			blocks_[3] = blocks_[2].down();
 			break;
 
 		case RotationType::R90:
-			cells_[1] = cells_[0].left();
-			cells_[2] = cells_[0].right();
-			cells_[3] = cells_[2].right();
+			blocks_[1] = blocks_[0].left();
+			blocks_[2] = blocks_[0].right();
+			blocks_[3] = blocks_[2].right();
 			break;
 
 		case RotationType::R180:
-			cells_[1] = cells_[0].up();
-			cells_[2] = cells_[1].up();
-			cells_[3] = cells_[0].down();
+			blocks_[1] = blocks_[0].up();
+			blocks_[2] = blocks_[1].up();
+			blocks_[3] = blocks_[0].down();
 			break;
 
 		case RotationType::R270:
-			cells_[1] = cells_[0].right();
-			cells_[2] = cells_[0].left();
-			cells_[3] = cells_[2].left();
+			blocks_[1] = blocks_[0].right();
+			blocks_[2] = blocks_[0].left();
+			blocks_[3] = blocks_[2].left();
 			break;
 	}
 }
@@ -228,27 +225,27 @@ Shape_J::Shape_J(Grid& grid) : Shape(grid) {
 void Shape_J::do_rotation(RotationType rotation) {
 	switch (rotation) {
 		case RotationType::NONE:
-			cells_[1] = cells_[0].up();
-			cells_[2] = cells_[1].up();
-			cells_[3] = cells_[0].left();
+			blocks_[1] = blocks_[0].up();
+			blocks_[2] = blocks_[1].up();
+			blocks_[3] = blocks_[0].left();
 			break;
 
 		case RotationType::R90:
-			cells_[1] = cells_[0].left();
-			cells_[2] = cells_[1].left();
-			cells_[3] = cells_[0].down();
+			blocks_[1] = blocks_[0].left();
+			blocks_[2] = blocks_[1].left();
+			blocks_[3] = blocks_[0].down();
 			break;
 
 		case RotationType::R180:
-			cells_[1] = cells_[0].down();
-			cells_[2] = cells_[1].down();
-			cells_[3] = cells_[0].right();
+			blocks_[1] = blocks_[0].down();
+			blocks_[2] = blocks_[1].down();
+			blocks_[3] = blocks_[0].right();
 			break;
 
 		case RotationType::R270:
-			cells_[1] = cells_[0].up();
-			cells_[2] = cells_[0].right();
-			cells_[3] = cells_[2].right();
+			blocks_[1] = blocks_[0].up();
+			blocks_[2] = blocks_[0].right();
+			blocks_[3] = blocks_[2].right();
 			break;
 	}
 }
@@ -260,27 +257,27 @@ Shape_S::Shape_S(Grid& grid) : Shape(grid) {
 void Shape_S::do_rotation(RotationType rotation) {
 	switch (rotation) {
 		case RotationType::NONE:
-			cells_[1] = cells_[0].right();
-			cells_[2] = cells_[0].down();
-			cells_[3] = cells_[2].left();
+			blocks_[1] = blocks_[0].right();
+			blocks_[2] = blocks_[0].down();
+			blocks_[3] = blocks_[2].left();
 			break;
 
 		case RotationType::R90:
-			cells_[1] = cells_[0].up();
-			cells_[2] = cells_[0].right();
-			cells_[3] = cells_[2].down();
+			blocks_[1] = blocks_[0].up();
+			blocks_[2] = blocks_[0].right();
+			blocks_[3] = blocks_[2].down();
 			break;
 
 		case RotationType::R180:
-			cells_[1] = cells_[0].left();
-			cells_[2] = cells_[0].up();
-			cells_[3] = cells_[2].right();
+			blocks_[1] = blocks_[0].left();
+			blocks_[2] = blocks_[0].up();
+			blocks_[3] = blocks_[2].right();
 			break;
 
 		case RotationType::R270:
-			cells_[1] = cells_[0].down();
-			cells_[2] = cells_[0].left();
-			cells_[3] = cells_[2].up();
+			blocks_[1] = blocks_[0].down();
+			blocks_[2] = blocks_[0].left();
+			blocks_[3] = blocks_[2].up();
 			break;
 	}
 }
@@ -292,27 +289,27 @@ Shape_Z::Shape_Z(Grid& grid) : Shape(grid) {
 void Shape_Z::do_rotation(RotationType rotation) {
 	switch (rotation) {
 		case RotationType::NONE:
-			cells_[1] = cells_[0].left();
-			cells_[2] = cells_[0].down();
-			cells_[3] = cells_[2].right();
+			blocks_[1] = blocks_[0].left();
+			blocks_[2] = blocks_[0].down();
+			blocks_[3] = blocks_[2].right();
 			break;
 
 		case RotationType::R90:
-			cells_[1] = cells_[0].up();
-			cells_[2] = cells_[0].left();
-			cells_[3] = cells_[2].down();
+			blocks_[1] = blocks_[0].up();
+			blocks_[2] = blocks_[0].left();
+			blocks_[3] = blocks_[2].down();
 			break;
 
 		case RotationType::R180:
-			cells_[1] = cells_[0].right();
-			cells_[2] = cells_[0].up();
-			cells_[3] = cells_[2].left();
+			blocks_[1] = blocks_[0].right();
+			blocks_[2] = blocks_[0].up();
+			blocks_[3] = blocks_[2].left();
 			break;
 
 		case RotationType::R270:
-			cells_[1] = cells_[0].down();
-			cells_[2] = cells_[0].right();
-			cells_[3] = cells_[2].up();
+			blocks_[1] = blocks_[0].down();
+			blocks_[2] = blocks_[0].right();
+			blocks_[3] = blocks_[2].up();
 			break;
 	}
 }
@@ -324,27 +321,27 @@ Shape_T::Shape_T(Grid& grid) : Shape(grid) {
 void Shape_T::do_rotation(RotationType rotation) {
 	switch (rotation) {
 		case RotationType::NONE:
-			cells_[1] = cells_[0].down();
-			cells_[2] = cells_[0].left();
-			cells_[3] = cells_[0].right();
+			blocks_[1] = blocks_[0].down();
+			blocks_[2] = blocks_[0].left();
+			blocks_[3] = blocks_[0].right();
 			break;
 
 		case RotationType::R90:
-			cells_[1] = cells_[0].up();
-			cells_[2] = cells_[0].down();
-			cells_[3] = cells_[0].right();
+			blocks_[1] = blocks_[0].up();
+			blocks_[2] = blocks_[0].down();
+			blocks_[3] = blocks_[0].right();
 			break;
 
 		case RotationType::R180:
-			cells_[1] = cells_[0].up();
-			cells_[2] = cells_[0].left();
-			cells_[3] = cells_[0].right();
+			blocks_[1] = blocks_[0].up();
+			blocks_[2] = blocks_[0].left();
+			blocks_[3] = blocks_[0].right();
 			break;
 
 		case RotationType::R270:
-			cells_[1] = cells_[0].down();
-			cells_[2] = cells_[0].left();
-			cells_[3] = cells_[0].up();
+			blocks_[1] = blocks_[0].down();
+			blocks_[2] = blocks_[0].left();
+			blocks_[3] = blocks_[0].up();
 			break;
 	}
 }

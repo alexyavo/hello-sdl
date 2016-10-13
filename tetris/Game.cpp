@@ -3,3 +3,7 @@
 //
 
 #include "Game.h"
+
+namespace Tetris {
+
+}

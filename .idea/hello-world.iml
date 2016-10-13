@@ -16,15 +16,15 @@
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/main.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Renderer.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tetris/Cell.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tetris/Game.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tetris/Game.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tetris/Shapes.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tetris/Game.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tetris/Block.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tetris/Grid.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tetris/Block.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tetris/Grid.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tetris/Shapes.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tetris/RotationType.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tetris/Cell.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/utils.cpp" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />

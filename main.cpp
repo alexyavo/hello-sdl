@@ -22,50 +22,58 @@
 //Screen dimension constants
 const int SCREEN_WIDTH  = 640;
 const int SCREEN_HEIGHT = 480;
-const char* ASSETS_DIR = "/home/sol/.tmp/assets/";
+const char* ASSETS_DIR = "/home/solyd/.tmp/assets/";
 
 using std::logic_error;
+using std::unique_ptr;
 using std::shared_ptr;
 
 using namespace utils;
 
-namespace SDL {
-
-class Initializer {
-public:
-		Initializer() {
-			SDL_Init(SDL_INIT_VIDEO);
-			if (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1") != SDL_TRUE) {
-				LOG_WARN << "Linear texture filtering is not enabled";
-			}
-
-			int imgFlags      = IMG_INIT_PNG;
-			int imgInitResult = IMG_Init(imgFlags);
-			if (imgInitResult == 0 || imgInitResult != imgFlags) {
-				throw logic_error(IMG_GetError());
-			}
-
-			if (TTF_Init() == -1) {
-				throw logic_error(TTF_GetError());
-			}
-		}
-
-		~Initializer() {
-			TTF_Quit();
-			IMG_Quit();
-			SDL_Quit();
-		}
-};
-
-}
-
 int main(int argc, char* args[]) {
-	SDL::Initializer init;
+	SDL_Init(SDL_INIT_VIDEO);
+	auto sdlQuit = utils::make_guard([]() {SDL_Quit();});
+
+	if (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1") != SDL_TRUE) {
+		LOG_WARN << "Linear texture filtering is not enabled";
+	}
+
+	int imgFlags      = IMG_INIT_PNG;
+	int imgInitResult = IMG_Init(imgFlags);
+	if (imgInitResult == 0 || imgInitResult != imgFlags) {
+		throw logic_error(IMG_GetError());
+	}
+	auto imgQuit = utils::make_guard([]() {IMG_Quit();});
+
+	if (TTF_Init() == -1) {
+		throw logic_error(TTF_GetError());
+	}
+	auto ttfQuit = utils::make_guard([]() {TTF_Quit();});
 
 	try {
 		SDL::Window               window("sdl test", SCREEN_WIDTH, SCREEN_HEIGHT);
 		shared_ptr<SDL::Renderer> renderer(window.create_renderer());
-		SDL::TtfFont              defaultFont("/home/sol/.tmp/assets/default.ttf", 16);
+		SDL::TtfFont              defaultFont("/home/solyd/.tmp/assets/default.ttf", 16);
+
+		unique_ptr<SDL::Surface> dot = SDL::Surface::create_from_img("/home/solyd/.tmp/assets/dot.bmp");
+		dot->set_color_key(Color::WHITE);
+		unique_ptr<SDL::Texture> dotTexture = dot->create_texture(*renderer);
+
+		while (true) {
+			SDL_Event e;
+			while (SDL_PollEvent(&e) != 0) {
+				switch (e.type) {
+					case SDL_QUIT:
+						return 0;
+				}
+			}
+
+			renderer->set_drawcolor(Color::WHITE);
+			renderer->clear();
+			renderer->render_copy(*dotTexture, { 0, 0 });
+
+			renderer->present();
+		}
 	}
 	catch (const std::exception& ex) {
 		std::cout << ex.what() << std::endl;
@@ -76,12 +84,30 @@ int main(int argc, char* args[]) {
 }
 
 int tetris_main(int argc, char* args[]) {
-	SDL::Initializer init;
+	SDL_Init(SDL_INIT_VIDEO);
+	auto sdlQuit = utils::make_guard([]() {SDL_Quit();});
+
+	if (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1") != SDL_TRUE) {
+		LOG_WARN << "Linear texture filtering is not enabled";
+	}
+
+
+	int imgFlags      = IMG_INIT_PNG;
+	int imgInitResult = IMG_Init(imgFlags);
+	if (imgInitResult == 0 || imgInitResult != imgFlags) {
+		throw logic_error(IMG_GetError());
+	}
+	auto imgQuit = utils::make_guard([]() {IMG_Quit();});
+
+	if (TTF_Init() == -1) {
+		throw logic_error(TTF_GetError());
+	}
+	auto ttfQuit = utils::make_guard([]() {TTF_Quit();});
 
 	try {
 		SDL::Window               window("sdl test", SCREEN_WIDTH, SCREEN_HEIGHT);
 		shared_ptr<SDL::Renderer> renderer(window.create_renderer());
-		SDL::TtfFont              defaultFont("/home/sol/.tmp/assets/default.ttf", 16);
+		SDL::TtfFont              defaultFont("/home/solyd/.tmp/assets/default.ttf", 16);
 
 		const Uint32 ticksPerFrame = 1000 / 60;
 
@@ -107,18 +133,18 @@ int tetris_main(int argc, char* args[]) {
 
 		std::unique_ptr<SDL::Texture> scoreTextTexture         =
 																					defaultFont.render_solid("SCORE:", Color::BLACK)
-																										 ->createTexture(*renderer);
+																										 ->create_texture(*renderer);
 		// The "SCORE:" will be to the right of the grid outline box
 		int                           scoreTextTextureOffset_x = 30;
 		int                           scoreTextTextureOffset_y = 10;
 
-		Point2D scoreTextTexturePos(grid.outline().topLeft.x +
+		Point2D scoreTextTexturePos(grid.outline().pos.x +
 																grid.outline().width + scoreTextTextureOffset_x,
-																grid.outline().topLeft.y + scoreTextTextureOffset_y);
+																grid.outline().pos.y + scoreTextTextureOffset_y);
 
 		std::unique_ptr<SDL::Texture> scoreCountTexture       =
 																					defaultFont.render_solid("0", Color::BLACK)
-																										 ->createTexture(*renderer);
+																										 ->create_texture(*renderer);
 		// How much below the "SCORE:" text will be the integer score displayed
 		int                           scoreCountTextureOffset = 20;
 
@@ -168,14 +194,15 @@ int tetris_main(int argc, char* args[]) {
 				if (shape->shift_down() == false) {
 					int rowsKilled = shape->suicide();
 					if (rowsKilled > 0) {
-						score += (1 << rowsKilled);
+						score += ( 1 << rowsKilled );
 					}
 
 					// TODO generalize somehow to convert int to texture/string
 					std::stringstream scoreText;
 					scoreText << score;
 					scoreCountTexture =
-									defaultFont.render_solid(scoreText.str(), Color::BLACK)->createTexture(*renderer);
+									defaultFont.render_solid(scoreText.str(), Color::BLACK)
+														 ->create_texture(*renderer);
 
 					shape = grid.spawn_shape();
 				}
@@ -205,7 +232,7 @@ int tetris_main(int argc, char* args[]) {
 
 				fpsTexture = defaultFont
 								.render_solid(fpsText.str(), Color::BLACK)
-								->createTexture(*renderer);
+								->create_texture(*renderer);
 
 				lastFpsPollTime = frameEndTime;
 				nframes         = 0;

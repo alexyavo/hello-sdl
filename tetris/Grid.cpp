@@ -3,7 +3,7 @@
 //
 
 #include "Grid.h"
-#include "Cell.h"
+#include "Block.h"
 
 namespace Tetris {
 
@@ -11,15 +11,15 @@ using namespace utils;
 
 Grid::Grid(int screenWidth, int screenHeight) {
 	outline_ = get_centered_rect(screenWidth, screenHeight,
-															 Grid::Width * Cell::size,
-															 Grid::Height * Cell::size);
+															 Grid::Width * Block::size,
+															 Grid::Height * Block::size);
 	// Align grid to cell size
-	outline_.topLeft.x -= outline_.topLeft.x % Cell::size;
-	outline_.topLeft.y -= outline_.topLeft.y % Cell::size;
+	outline_.pos.x -= outline_.pos.x % Block::size;
+	outline_.pos.y -= outline_.pos.y % Block::size;
 
 	for (int i = 0; i < Grid::Width; ++i) {
 		for (int j = 0; j < Grid::Height; ++j) {
-			deadCells_[i][j] = false;
+			deadBlocks_[i][j] = false;
 		}
 	}
 }
@@ -29,27 +29,27 @@ void Grid::render(SDL::Renderer& renderer) {
 
 	for (int i = 0; i < Grid::Width; ++i) {
 		for (int j = 0; j < Grid::Height; ++j) {
-			if (deadCells_[i][j]) {
-				utils::Rectangle cell({ outline_.topLeft.x + i * Cell::size,
-																outline_.topLeft.y + j * Cell::size },
-															Cell::size, Cell::size);
+			if (deadBlocks_[i][j]) {
+				utils::Rectangle cell({ outline_.pos.x + i * Block::size,
+																outline_.pos.y + j * Block::size },
+															Block::size, Block::size);
 				renderer.draw(cell, true);
 			}
 		}
 	}
 }
 
-bool Grid::is_cell_dead(const Cell& cell) {
+bool Grid::is_block_dead(const Block& block) {
 	return
-					deadCells_
-					[( cell.topLeft.x - outline_.topLeft.x ) / Cell::size]
-					[( cell.topLeft.y - outline_.topLeft.y ) / Cell::size];
+					deadBlocks_
+					[( block.pos.x - outline_.pos.x ) / Block::size]
+					[( block.pos.y - outline_.pos.y ) / Block::size];
 }
 
-void Grid::kill_cell(const Cell& cell) {
-	deadCells_
-	[( cell.topLeft.x - outline_.topLeft.x ) / Cell::size]
-	[( cell.topLeft.y - outline_.topLeft.y ) / Cell::size] = true;
+void Grid::kill_block(const Block& block) {
+	deadBlocks_
+	[( block.pos.x - outline_.pos.x ) / Block::size]
+	[( block.pos.y - outline_.pos.y ) / Block::size] = true;
 }
 
 int Grid::clear_dead_rows() {
@@ -59,7 +59,7 @@ int Grid::clear_dead_rows() {
 		bool rowIsFull = true;
 
 		for (int i = 0; i < Grid::Width; ++i) {
-			if (deadCells_[i][j] == false) {
+			if (deadBlocks_[i][j] == false) {
 				rowIsFull = false;
 				break;
 			}
@@ -69,12 +69,12 @@ int Grid::clear_dead_rows() {
 			++clearedRowsCount;
 
 			for (int i = 0; i < Grid::Width; ++i) {
-				deadCells_[i][j] = false;
+				deadBlocks_[i][j] = false;
 			}
 
 			for (int j2 = j; j2 > 0; --j2) {
 				for (int i = 0; i < Grid::Width; ++i) {
-					deadCells_[i][j2] = deadCells_[i][j2 - 1];
+					deadBlocks_[i][j2] = deadBlocks_[i][j2 - 1];
 				}
 			}
 
@@ -122,7 +122,7 @@ std::unique_ptr<Shape> Grid::spawn_shape() {
 		case 6:
 			return Shape::create<Shape_I>(*this, r);
 		default:
-			1/0;
+			1 / 0;
 	}
 }
 
